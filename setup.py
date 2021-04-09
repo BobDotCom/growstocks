@@ -12,16 +12,15 @@ def read(rel_path):
 
 
 # The full version, including alpha/beta/rc tags
-__version__ = ''
 with open('growstocks/__init__.py') as f:
-    __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+    __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1) or ''
 
 with open("README.rst", "r", encoding="utf-8") as fh:
     long_description = fh.read().replace("""===================
 growstocks
-===================""", f"""===================
-growstocks {__version__}
-===================""")
+===================""", """===================
+growstocks {0}
+===================""".format(__version__))
 
 setuptools.setup(
     name="growstocks",
