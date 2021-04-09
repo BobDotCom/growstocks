@@ -27,7 +27,7 @@ Usage
     >>> import growstocks
     >>> client = growstocks.Client(913117854995652992,"T%GRD4iEiFmgyYE!O5&ZCx3Rn%uqwPV3")
     >>> client.default_scopes = growstocks.Scopes(profile=True, balance=True, discord=True)
-    >>> user = client.oauth.fetch_user('31G4k57rG3asdyyi5Lqk')
+    >>> user = client.auth.fetch_user('31G4k57rG3asdyyi5Lqk')
     >>> dict(user)
     {'discord_id': '690420846774321221',
      'id': 1916,
@@ -38,7 +38,6 @@ Usage
 
 """
 import base64
-import typing
 
 import requests
 import urllib3
@@ -50,9 +49,6 @@ __version__ = '0.1.0'
 
 __license__ = "MIT License"
 __copyright__ = "Copyright 2021 {}".format(__author__)
-
-
-api_url = 'https://api.growstocks.xyz/v1/auth'
 
 
 class Scopes:
@@ -137,7 +133,7 @@ class PartialUser:
     -----------
     id: :class:`int`
         The user's id
-    name: Optional[:class:`str`]
+    name: :class:`str`, optional
         The user's name
     email: Optional[:class:`str`]
         The user's email
@@ -165,7 +161,7 @@ class PartialUser:
     """
 
     def __init__(self, id, name=None, email=None, growid=None, balance=None, discord_id=None):
-        self.id: int = id
+        self.id = id
         self.name = name
         self.email = email
         self.growid = growid
@@ -227,6 +223,14 @@ class User(PartialUser):
         else:
             raise StopIteration
 
+    def next(self):
+        """
+        Python 2 compatibility
+
+        :meta private:
+        """
+        return self.__next__()
+
     def __str__(self):
         return self.name
 
@@ -247,7 +251,7 @@ class Client:
         Default scopes to use for endpoints requiring scopes. May be defined after initialization
     default_redirects: Optional[:class:`dict`]
         A dict of the default redirects. Accepted keys are "site" and "auth". The site value
-        is used for shorthand and will be substituted in for "{site}" in the other values.
+        is used for shorthand and will be substituted in for "{0}" in the other values.
 
     Attributes
     -----------
@@ -255,6 +259,16 @@ class Client:
         Base class for authorization endpoints.
     pay: :class:`pay`
         Base class for pay endpoints.
+    client: :class:`client`
+        Client ID
+    secret: :class:`str`
+        Client secret
+    default_scopes: :class:`Scopes`
+        Default scopes to use for endpoints requiring scopes.
+    default_redirects: :class:`dict`
+        A dict of the default redirects
+    api_url: :class:`str`
+        The url to use when querying the api
     """
 
     def __init__(self, client, secret, default_scopes=Scopes(), default_redirects=None):
@@ -266,6 +280,7 @@ class Client:
         self.secret = secret
         self.default_scopes = default_scopes
         self.default_redirects = default_redirects
+        self.api_url = 'https://api.growstocks.xyz/v1/'
         self.auth = auth(self)
         self.pay = pay(self)
 
@@ -278,11 +293,17 @@ class auth:
     -----------
     client: :class:`Client`
         Client object
+
+    Attributes
+    -----------
+    api_url: :class:`str`
+        The base url to use for authorization endpoints. Uses :obj:`Client.api_url` to generate.
+
     """
 
     def __init__(self, client):
         self.client = client
-        self._ratelimits = NotImplemented
+        self.api_url = '{0}/auth'.format(self.client.api_url)
 
     def make_url(self, redirect_uri=None, scopes=None):
         """
@@ -299,18 +320,25 @@ class auth:
         --------
         :class:`str`
             Authorization url
+
+        Raises
+        -------
+        ValueError
+            redirect_uri is :class:`None`
         """
         if redirect_uri is None:
             redirect_uri = self.client.default_redirects['auth']
             if redirect_uri is None:
                 raise ValueError('redirect_uri must not be None')
+            else:
+                redirect_uri = redirect_uri.format(self.client.default_redirects['site'])
         scopes = self.client.default_scopes if scopes is None else scopes
         _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
         url = 'https://auth.growstocks.xyz/user/authorize'
         params = urllib3.request.urlencode({
             'secret': self.client.secret, 'scopes': str(scopes), 'redirect_uri': _redirect_uri
             })
-        return f'{url}?{params}'
+        return '{0}?{1}'.format(url, params)
 
     def fetch_user(self, token, scopes=None):
         """
@@ -330,12 +358,12 @@ class auth:
         """
         scopes = self.client.default_scopes if scopes is None else scopes
         payload = {
-            'secret': self.client.secret, 'token': token, 'scopes': scopes
+            'secret': self.client.secret, 'token': token, 'scopes': str(scopes)
             }
         if scopes is None:
             del payload['scopes']
 
-        with requests.post(api_url + '/user', data=payload) as resp:
+        with requests.post('{0}/user'.format(self.api_url), data=payload) as resp:
             rtrn_json = resp.json()
 
         return User.from_dict(rtrn_json['user'])
@@ -344,6 +372,14 @@ class auth:
 class pay:
     """
     Coming in future minor versions
+
+
+    Base class for pay endpoints. Not meant to be initialized outside a client object.
+
+        Parameters
+        -----------
+        client: :class:`Client`
+            Client object
     """
 
     def __init__(self, client):
