@@ -15,7 +15,7 @@ def read(rel_path):
 with open('growstocks/__init__.py') as f:
     __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1) or ''
 
-with open("README.rst", "r", encoding="utf-8") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read().replace("""===================
 growstocks
 ===================""", """===================
