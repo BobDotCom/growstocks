@@ -10,6 +10,13 @@ NOTE: asynchronous support has not been implemented yet, but is planned for the 
 
 .. |Status badge| image:: https://github.com/BobDotCom/growstocks/workflows/Python%20Package/badge.svg
    :target: https://github.com/BobDotCom/growstocks/actions?query=workflow%3A"Python+Package"
+   :alt: Package Status
+
+|Docs badge|
+
+.. |Docs badge| image:: https://readthedocs.org/projects/growstocks/badge/?version=latest
+   :target: https://growstocks.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 PyPI: https://pypi.org/project/growstocks/
 
