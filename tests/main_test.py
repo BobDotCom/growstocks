@@ -1,9 +1,10 @@
 import growstocks
 import pytest
-import secrets
+import random
+import string
 
 
-tests = [secrets.token_hex() for _ in range(1000)]
+tests = [''.join(random.choice(string.ascii_letters) for _ in range(10)) for _ in range(1000)]
 
 
 @pytest.fixture
