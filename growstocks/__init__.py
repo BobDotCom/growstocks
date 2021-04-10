@@ -13,6 +13,7 @@ Docs: https://growstocks.readthedocs.io/en/latest/
 
 Installation
 ############
+
 You can install released versions of growstocks from the Python Package Index via pip or a similar tool:
 
 **Stable Release:** ``pip install growstocks``
@@ -21,6 +22,7 @@ You can install released versions of growstocks from the Python Package Index vi
 
 Usage
 #####
+
 .. code-block:: python
     >>> import growstocks
     >>> client = growstocks.Client(913117854995652992,"T%GRD4iEiFmgyYE!O5&ZCx3Rn%uqwPV3")
