@@ -3,6 +3,7 @@ GrowStocks API Wrapper Documentation
 
 .. automodule:: growstocks
    :members:
+   :inherited-members:
 
 .. toctree::
    :maxdepth: 2
