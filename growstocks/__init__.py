@@ -53,6 +53,34 @@ api_url: str = 'https://api.growstocks.xyz/v1/auth'
 
 
 class Scopes:
+    """
+    Scopes to use in authorization endpoints
+
+    Parameters
+    -----------
+    profile: :class:`bool`
+        Whether to fetch the user's profile. Defaults to ``True``.
+    email: :class:`bool`
+        Whether to fetch the user's email. If this is selected then profile will automatically be selected by the
+        API. Defaults to ``False``.
+    balance: :class:`bool`
+        Whether to fetch the user's balance. If this is selected then either email or profile must be
+        selected. If both are not selected, it will automatically select profile. Defaults to ``False``.
+    discord: :class:`bool`
+        Whether to fetch the user's profile. If this is selected then either email or profile must be
+        selected. If both are not selected, it will automatically select profile. Defaults to ``False``.
+
+    Attributes
+    -----------
+    profile: :class:`bool`
+        Whether to fetch the user's profile.
+    email: :class:`bool`
+        Whether to fetch the user's email.
+    balance: :class:`bool`
+        Whether to fetch the user's balance.
+    discord: :class:`bool`
+        Whether to fetch the user's profile.
+    """
 
     def __init__(self, profile: bool = True, email: bool = False, balance: bool = False, discord: bool = False) -> None:
         if balance or discord:
@@ -67,10 +95,26 @@ class Scopes:
 
     @property
     def as_list(self):
+        """
+        The scopes set in this object in the form of a :class:`list`
+
+        Returns
+        --------
+        :class:`list`
+            List of scopes
+        """
         return [k for k, v in self.as_dict.items() if v]
 
     @property
     def as_dict(self):
+        """
+        The scopes set in this object in the form of a :class:`dict`
+
+        Returns
+        --------
+        :class:`dict`
+            Dict of scopes
+        """
         return {
             'profile': self.profile, 'email': self.email, 'balance': self.balance, 'discord': self.discord
             }
@@ -83,8 +127,41 @@ class Scopes:
 
 
 class PartialUser:
+    """
+    A placeholder user object, can be initialized partially without fetching all information
 
-    def __init__(self, id: int, name: str, email: str = None, growid: str = None, balance: int = None,
+    Parameters
+    -----------
+    id: :class:`int`
+        The user's id
+    name: Optional[:class:`str`]
+        The user's name
+    email: Optional[:class:`str`]
+        The user's email
+    growid: Optional[:class:`str`]
+        The user's growid
+    balance: Optional[:class:`int`]
+        The user's balance
+    discord_id: Optional[:class:`int`]
+        The user's discord id
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The user's id
+    name: Optional[:class:`str`]
+        The user's name
+    email: Optional[:class:`str`]
+        The user's email
+    growid: Optional[:class:`str`]
+        The user's growid
+    balance: Optional[:class:`int`]
+        The user's balance
+    discord_id: Optional[:class:`int`]
+        The user's discord id
+    """
+
+    def __init__(self, id: int, name: str = None, email: str = None, growid: str = None, balance: int = None,
                  discord_id: int = None):
         self.id: int = id
         self.name: typing.Optional[str] = name
@@ -95,9 +172,25 @@ class PartialUser:
 
 
 class User(PartialUser):
+    """
+    A user object, fetched from the api. Subclass of :class:`PartialUser`
+    """
 
     @classmethod
     def from_dict(cls, input_dict: dict) -> 'User':
+        """
+        Return a user object extracted from a :class:`dict`
+
+        Parameters
+        -----------
+        input_dict: :class:`dict`
+            Dict to extract information from
+
+        Returns
+        --------
+        :class:`User`
+            User object
+        """
         id_ = input_dict.get('id')
         name = input_dict.get('name')
         email = input_dict.get('email')
@@ -107,7 +200,15 @@ class User(PartialUser):
 
         return cls(id=id_, name=name, email=email, growid=growid, balance=balance, discord_id=discord_id)
 
-    def as_dict(self) -> dict:
+    def as_dict(self):
+        """
+        Get a dict of the current user. This may also be used as ``dict(User)``
+
+        Returns
+        --------
+        :class:`dict`
+            dict of user
+        """
         return dict(self)
 
     def __iter__(self):
@@ -131,21 +232,30 @@ class User(PartialUser):
 
 
 class Client:
+    """
+    Base client object. Contains classes for both authorization and pay endpoints.
+
+    Parameters
+    -----------
+    client: :class:`int`
+        Client ID
+    secret: :class:`str`
+        Client secret, it is recommended to store this in an environment variable or other secure method
+    default_scopes: Optional[:class:`Scopes`]
+        Default scopes to use for endpoints requiring scopes. May be defined after initialization
+    default_redirects: Optional[:class:`dict`]
+        A dict of the default redirects. Accepted keys are "site" and "auth". The site value
+        is used for shorthand and will be substituted in for "{site}" in the other values.
+
+    Attributes
+    -----------
+    auth: :class:`auth`
+        Base class for authorization endpoints.
+    pay: :class:`pay`
+        Base class for pay endpoints.
+    """
 
     def __init__(self, client: int, secret: str, default_scopes: Scopes = Scopes(), default_redirects=None) -> None:
-        """
-        Base client object. Contains classes for both authorization and pay endpoints.
-
-        :param client: Client ID
-        :type client: int
-        :param secret: Client secret, it is recommended to store this in an environment variable or other secure method
-        :type secret: str
-        :param default_scopes: Default scopes to use for endpoints requiring scopes. May be defined after initialization
-        :type default_scopes: Scopes
-        :param default_redirects: A dict of the default redirects. Accepted keys are "site" and "auth". The site value
-        is used for shorthand and will be substituted in for "{site}" in the other values.
-        :type default_redirects: dict
-        """
         if default_redirects is None:
             default_redirects = {
                 'site': '', 'auth': None
@@ -159,14 +269,16 @@ class Client:
 
 
 class auth:
+    """
+    Base class for authorization endpoints. Not meant to be initialized outside a client object.
+
+    Parameters
+    -----------
+    client: :class:`Client`
+        Client object
+    """
 
     def __init__(self, client: Client) -> None:
-        """
-        Base class for authorization endpoints. Not meant to be initialized outside a client object.
-
-        :param client: Client object
-        :type client: Client
-        """
         self.client: Client = client
         self._ratelimits = NotImplemented
 
@@ -174,12 +286,17 @@ class auth:
         """
         Generate an authorization url with set parameters
 
-        :param redirect_uri: Url to redirect to after authorization, defaults to Client.default_redirects['auth']
-        :type redirect_uri: str
-        :param scopes: Scopes for the authorization, defaults to Client.default_scopes
-        :type scopes: Scopes
-        :return: Authorization url
-        :rtype: str
+        Parameters
+        -----------
+        redirect_uri: :class:`str`
+            Url to redirect to after authorization, defaults to Client.default_redirects['auth']
+        scopes: :class:`Scopes`
+            Scopes for the authorization, defaults to Client.default_scopes
+
+        Returns
+        --------
+        :class:`str`
+            Authorization url
         """
         if redirect_uri is None:
             redirect_uri = self.client.default_redirects['auth']
@@ -194,6 +311,21 @@ class auth:
         return f'{url}?{params}'
 
     def fetch_user(self, token: str, scopes: Scopes = None) -> User:
+        """
+        Fetch a user from the api by their token.
+
+        Parameters
+        -----------
+        token: :class:`str`
+            The user's authorization token, granted from :meth:`make_url`
+        scopes: :class:`Scopes`
+            The scopes to use for authenticating the user
+
+        Returns
+        --------
+        :class:`User`
+            The user fetched from the api
+        """
         scopes = self.client.default_scopes if scopes is None else scopes
         payload = {
             'secret': self.client.secret, 'token': token, 'scopes': scopes
@@ -208,6 +340,9 @@ class auth:
 
 
 class pay:
+    """
+    Coming in future minor versions
+    """
 
     def __init__(self, client):
         self.client = client
