@@ -33,6 +33,7 @@ Usage
      'email': None,
      'growid': 'Bob430',
      'balance': 3}
+
 """
 import base64
 import typing
@@ -49,7 +50,7 @@ __license__ = "MIT License"
 __copyright__ = "Copyright 2021 {}".format(__author__)
 
 
-api_url: str = 'https://api.growstocks.xyz/v1/auth'
+api_url = 'https://api.growstocks.xyz/v1/auth'
 
 
 class Scopes:
@@ -82,16 +83,16 @@ class Scopes:
         Whether to fetch the user's profile.
     """
 
-    def __init__(self, profile: bool = True, email: bool = False, balance: bool = False, discord: bool = False) -> None:
+    def __init__(self, profile=True, email=False, balance=False, discord=False):
         if balance or discord:
             profile = True
         if email:
             profile = False
 
-        self.profile: bool = profile
-        self.email: bool = email
-        self.balance: bool = balance
-        self.discord: bool = discord
+        self.profile = profile
+        self.email = email
+        self.balance = balance
+        self.discord = discord
 
     @property
     def as_list(self):
@@ -161,14 +162,13 @@ class PartialUser:
         The user's discord id
     """
 
-    def __init__(self, id: int, name: str = None, email: str = None, growid: str = None, balance: int = None,
-                 discord_id: int = None):
+    def __init__(self, id, name=None, email=None, growid=None, balance=None, discord_id=None):
         self.id: int = id
-        self.name: typing.Optional[str] = name
-        self.email: typing.Optional[str] = email
-        self.growid: typing.Optional[str] = growid
-        self.balance: typing.Optional[int] = balance
-        self.discord_id: typing.Optional[int] = discord_id
+        self.name = name
+        self.email = email
+        self.growid = growid
+        self.balance = balance
+        self.discord_id = discord_id
 
 
 class User(PartialUser):
@@ -177,7 +177,7 @@ class User(PartialUser):
     """
 
     @classmethod
-    def from_dict(cls, input_dict: dict) -> 'User':
+    def from_dict(cls, input_dict):
         """
         Return a user object extracted from a :class:`dict`
 
@@ -225,7 +225,7 @@ class User(PartialUser):
         else:
             raise StopIteration
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
 
     # def __repr__(self) -> repr:  #     return str(self)
@@ -255,17 +255,17 @@ class Client:
         Base class for pay endpoints.
     """
 
-    def __init__(self, client: int, secret: str, default_scopes: Scopes = Scopes(), default_redirects=None) -> None:
+    def __init__(self, client, secret, default_scopes=Scopes(), default_redirects=None):
         if default_redirects is None:
             default_redirects = {
                 'site': '', 'auth': None
                 }
-        self.client: int = client
-        self.secret: str = secret
-        self.default_scopes: Scopes = default_scopes
-        self.default_redirects: dict = default_redirects
-        self.auth: auth = auth(self)
-        self.pay: pay = pay(self)
+        self.client = client
+        self.secret = secret
+        self.default_scopes = default_scopes
+        self.default_redirects = default_redirects
+        self.auth = auth(self)
+        self.pay = pay(self)
 
 
 class auth:
@@ -278,11 +278,11 @@ class auth:
         Client object
     """
 
-    def __init__(self, client: Client) -> None:
-        self.client: Client = client
+    def __init__(self, client):
+        self.client = client
         self._ratelimits = NotImplemented
 
-    def make_url(self, redirect_uri: str = None, scopes: Scopes = None) -> str:
+    def make_url(self, redirect_uri=None, scopes=None):
         """
         Generate an authorization url with set parameters
 
@@ -310,7 +310,7 @@ class auth:
             })
         return f'{url}?{params}'
 
-    def fetch_user(self, token: str, scopes: Scopes = None) -> User:
+    def fetch_user(self, token, scopes=None):
         """
         Fetch a user from the api by their token.
 
