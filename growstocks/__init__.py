@@ -292,6 +292,15 @@ class Client:
         """
         return self._session
 
+    @staticmethod
+    def maybe_await(maybe_coro):
+        """
+        Await if it is a coro, return if not.
+
+        :meta private:
+        """
+        return maybe_coro  # will add support later for async, going to build a python 2 compatible version first
+
 
 class auth:
     """
@@ -371,8 +380,8 @@ class auth:
         if scopes is None:
             del payload['scopes']
 
-        with self.client.session.post('{0}/user'.format(self.api_url), data=payload) as resp:
-            rtrn_json = resp.json()
+        resp = self.client.maybe_await(self.client.session.post('{0}/user'.format(self.api_url), data=payload))
+        rtrn_json = resp.json()
 
         return User.from_dict(rtrn_json['user'])
 
