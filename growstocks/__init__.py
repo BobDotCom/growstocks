@@ -278,11 +278,19 @@ class Client:
                 }
         self.client = client
         self.secret = secret
+        self._session = requests.session()
         self.default_scopes = default_scopes
         self.default_redirects = default_redirects
         self.api_url = 'https://api.growstocks.xyz/v1/'
         self.auth = auth(self)
         self.pay = pay(self)
+
+    @property
+    def session(self):
+        """
+        :meta private:
+        """
+        return self._session
 
 
 class auth:
@@ -363,7 +371,7 @@ class auth:
         if scopes is None:
             del payload['scopes']
 
-        with requests.post('{0}/user'.format(self.api_url), data=payload) as resp:
+        with self.client.session.post('{0}/user'.format(self.api_url), data=payload) as resp:
             rtrn_json = resp.json()
 
         return User.from_dict(rtrn_json['user'])
