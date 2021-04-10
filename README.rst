@@ -32,12 +32,13 @@ You can install released versions of growstocks from the Python Package Index vi
 
 Usage
 #####
+
 .. code-block:: python
 
     >>> import growstocks
     >>> client = growstocks.Client(913117854995652992,"T%GRD4iEiFmgyYE!O5&ZCx3Rn%uqwPV3")
     >>> client.default_scopes = growstocks.Scopes(profile=True, balance=True, discord=True)
-    >>> user = client.oauth.fetch_user('31G4k57rG3asdyyi5Lqk')
+    >>> user = client.auth.fetch_user('31G4k57rG3asdyyi5Lqk')
     >>> dict(user)
     {'discord_id': '690420846774321221',
      'id': 1916,
