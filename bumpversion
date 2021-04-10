@@ -1,4 +1,4 @@
-#!/usr/bin bash
+#!/usr/bin/env bash
 
 getValueFromConfig() {
     current_version="$(grep "${1}" .bumpversion.cfg  | cut -d '=' -f 2)"
