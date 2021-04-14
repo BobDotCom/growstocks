@@ -51,7 +51,7 @@ from .wrapper import *
 # PACKAGE INFO
 __title__ = "growstocks"
 __author__ = 'BobDotCom'
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 __license__ = "MIT License"
 __copyright__ = "Copyright 2021 {}".format(__author__)
