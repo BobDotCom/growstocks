@@ -4,7 +4,7 @@ import urllib3
 
 from .ext import PartialTransaction, Transaction, User
 
-if __name__ == '__main__':
+if __name__ != '__main__':
     class auth:
         """
         Base class for authorization endpoints. Not meant to be initialized outside a client object.
