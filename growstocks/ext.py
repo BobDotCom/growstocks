@@ -204,6 +204,18 @@ if __name__ != '__main__':
         -----------
         id: :class:`int`
             The transaction id
+        user: :class:`int`, optional
+            The ID of the user
+        party: :class:`int`, optional
+            The developer account’s user ID
+        amount: :class:`int`, optional
+            The amount of World Locks the transaction holds
+        status: :class:`int`, optional
+            The payment status of the transaction (integer)
+        datetime: :class:`datetime.datetime`, optional
+            The date of creation of the transaction
+        client: :class:`Client`, optional
+            The client object
         """
 
         def __init__(self, id, user=None, party=None, amount=None, status=None, date_time=None, client=None):
@@ -216,13 +228,37 @@ if __name__ != '__main__':
             self._client = client
 
         def make_payment_url(self, redirect_uri=None):
+            """
+            Shortcut of :meth:`Client.pay.make_payment_url`
+
+            Parameters
+            ----------
+            redirect_uri: :class:`str`, optional
+                Where to redirect user after payment
+
+            Returns
+            -------
+            :class:`str`
+                A payment url to send the user to
+            """
             return self._client.pay.make_payment_url(self, redirect_uri=redirect_uri)
 
         def fetch_info(self):
+            """
+            Shortcut of :meth:`Client.pay.fetch_transaction`
+
+            Returns
+            -------
+            :class:`Transaction`
+                Transaction object with info about the fetched transaction.
+            """
             return self._client.pay.fetch_transaction(self)
 
         @property
         def datetime(self):
+            """
+            :meta private:
+            """
             return self._datetime
 
         @datetime.setter
@@ -231,6 +267,9 @@ if __name__ != '__main__':
 
         @property
         def user(self):
+            """
+            :meta private:
+            """
             return self._user
 
         @user.setter
@@ -243,13 +282,15 @@ if __name__ != '__main__':
         @classmethod
         def from_dict(cls, input_dict, client=None):
             """
+            Extract a transaction object from a dict returned by api
 
             Parameters
             ----------
             input_dict: :class:`dict`
                 Input dict of info fetched from api
-            client: :class:`Client`
+            client: :class:`Client`, optional
                 Client object
+
             Returns
             -------
             :class:`Transaction`
@@ -265,4 +306,12 @@ if __name__ != '__main__':
 
         @property
         def paid(self):
+            """
+            If the order is paid
+
+            Returns
+            -------
+            :class:`bool`
+                Whether the order is paid or not
+            """
             return bool(int(self.status))

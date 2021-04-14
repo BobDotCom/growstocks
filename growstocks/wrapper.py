@@ -16,6 +16,8 @@ if __name__ != '__main__':
 
         Attributes
         -----------
+        client: :class:`Client`
+            The client object passed in initialization
         api_url: :class:`str`
             The base url to use for authorization endpoints. Uses :obj:`Client.api_url` to generate.
 
@@ -31,20 +33,20 @@ if __name__ != '__main__':
 
             Parameters
             -----------
-            redirect_uri: :class:`str`
+            redirect_uri: :class:`str`, optional
                 Url to redirect to after authorization, defaults to Client.default_redirects['auth']
-            scopes: :class:`Scopes`
+            scopes: :class:`Scopes`, optional
                 Scopes for the authorization, defaults to Client.default_scopes
-
-            Returns
-            --------
-            :class:`str`
-                Authorization url
 
             Raises
             -------
             ValueError
                 redirect_uri is :class:`None`
+
+            Returns
+            --------
+            :class:`str`
+                Authorization url
             """
             if redirect_uri is None:
                 redirect_uri = self.client.default_redirects['auth']
@@ -67,14 +69,19 @@ if __name__ != '__main__':
             Parameters
             -----------
             token: :class:`str`
-                The user's authorization token, granted from :meth:`make_url`
-            scopes: :class:`Scopes`
-                The scopes to use for authenticating the user
+                The user's authorization token, granted from :meth:`make_url`.
+            scopes: :class:`Scopes`, optional
+                The scopes to use for authenticating the user, defaults to client default scopes.
+
+            Raises
+            ------
+            RuntimeError
+                API call failed.
 
             Returns
             --------
             :class:`User`
-                The user fetched from the api
+                The user fetched from the api.
             """
             scopes = self.client.default_scopes if scopes is None else scopes
             payload = {
@@ -85,6 +92,8 @@ if __name__ != '__main__':
 
             resp = self.client.maybe_await(self.client.session.post('{0}/user'.format(self.api_url), data=payload))
             rtrn_json = self.client.maybe_await(resp.json())
+            if not rtrn_json['success']:
+                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
             return User.from_dict(rtrn_json['user'])
 
@@ -100,6 +109,8 @@ if __name__ != '__main__':
 
         Attributes
         -----------
+        client: :class:`Client`
+            The client object passed in initialization
         api_url: :class:`str`
             Api url used for endpoints
         """
@@ -113,7 +124,7 @@ if __name__ != '__main__':
             Create a transaction.
 
             Parameters
-            -----------
+            ----------
             user: :class:`PartialUser`
                 The user to create the transaction for. Usually a :class:`User` but a :class:`PartialUser` will do fine.
             amount: :class:`int`
@@ -122,12 +133,12 @@ if __name__ != '__main__':
                 Transaction notes to send. Maximum of 50 chars.
 
             Raises
-            -------
+            ------
             RuntimeError
                 API call failed
 
             Returns
-            --------
+            -------
             :class:`PartialTransaction`
                 The transaction object
             """
@@ -183,6 +194,24 @@ if __name__ != '__main__':
             return '{0}?{1}'.format(url, params)
 
         def fetch_transaction(self, transaction):
+            """
+            Fetch info about a transaction.
+
+            Parameters
+            ----------
+            transaction: :class:`PartialTransaction`
+                Transaction object to fetch info about.
+
+            Raises
+            ------
+            RuntimeError
+                API call failed.
+
+            Returns
+            -------
+            :class:`Transaction`
+                Transaction object with info about the fetched transaction.
+            """
             payload = {
                 'secret': self.client.secret, 'transaction': transaction.id
                 }
@@ -199,7 +228,7 @@ if __name__ != '__main__':
 
         def send(self, user, amount, notes=None):
             """
-            Send world locks to a user
+            Send world locks to a user.
 
             Parameters
             ----------
@@ -250,4 +279,4 @@ if __name__ != '__main__':
             rtrn_json = self.client.maybe_await(resp.json())
             if not rtrn_json['success']:
                 raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
-            return rtrn_json['balance']
+            return int(rtrn_json['balance'])
