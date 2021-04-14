@@ -39,8 +39,8 @@ Usage
 """
 import requests
 
-from .ext import Scopes
-from .wrapper import auth, pay
+from .ext import *
+from .wrapper import *
 
 # PACKAGE INFO
 __title__ = "growstocks"
