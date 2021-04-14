@@ -36,7 +36,8 @@ Usage
 
 Using Async
 ###########
-To use in an async context, just use the import below and make sure to await the functions marked as coroutines.
+To use in an async context, just use ``import growstocks.aio as growstocks`` as your import and make sure to await the
+functions marked as coroutines.
 
 .. code-block:: python
 
