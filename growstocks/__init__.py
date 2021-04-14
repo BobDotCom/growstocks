@@ -38,6 +38,7 @@ Usage
 
 """
 import base64
+import datetime
 
 import requests
 import urllib3
@@ -135,28 +136,28 @@ class PartialUser:
         The user's id
     name: :class:`str`, optional
         The user's name
-    email: Optional[:class:`str`]
+    email: :class:`str`, optional
         The user's email
-    growid: Optional[:class:`str`]
+    growid: :class:`str`, optional
         The user's growid
-    balance: Optional[:class:`int`]
+    balance: :class:`int`, optional
         The user's balance
-    discord_id: Optional[:class:`int`]
+    discord_id: :class:`int`, optional
         The user's discord id
 
     Attributes
     -----------
     id: :class:`int`
         The user's id
-    name: Optional[:class:`str`]
+    name: :class:`str`, optional
         The user's name
-    email: Optional[:class:`str`]
+    email: :class:`str`, optional
         The user's email
-    growid: Optional[:class:`str`]
+    growid: :class:`str`, optional
         The user's growid
-    balance: Optional[:class:`int`]
+    balance: :class:`int`, optional
         The user's balance
-    discord_id: Optional[:class:`int`]
+    discord_id: :class:`int`, optional
         The user's discord id
     """
 
@@ -223,18 +224,99 @@ class User(PartialUser):
         else:
             raise StopIteration
 
-    def next(self):
-        """
-        Python 2 compatibility
-
-        :meta private:
-        """
-        return self.__next__()
-
     def __str__(self):
         return self.name
 
     # def __repr__(self) -> repr:  #     return str(self)
+
+
+class PartialTransaction:
+    """
+    A placeholder transaction object, can be initialized partially without fetching all information
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The transaction ID
+    user: :class:`int`, optional
+        The ID of the user
+    party: :class:`int`, optional
+        The developer account’s user ID
+    amount: :class:`int`, optional
+        The amount of World Locks the transaction holds
+    status: :class:`int`, optional
+        The payment status of the transaction (integer)
+    date_time: :class:`str`, optional
+        The date of creation of the transaction(yyyy-mm-dd HH:MM:SS)
+    client: :class:`Client`, optional
+        The client object
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The transaction id
+    """
+
+    def __init__(self, id, user=None, party=None, amount=None, status=None, date_time=None, client=None):
+        self.id = id
+        self.user = user
+        self.party = party
+        self.amount = amount
+        self.status = status
+        self.datetime = date_time
+        self._client = client
+
+    def make_payment_url(self, redirect_uri=None):
+        return self._client.pay.make_payment_url(self, redirect_uri=redirect_uri)
+
+    def fetch_info(self):
+        return self._client.pay.fetch_transaction(self)
+
+    @property
+    def datetime(self):
+        return self._datetime
+
+    @datetime.setter
+    def datetime(self, value):
+        self._datetime = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+
+    @property
+    def user(self):
+        return self._user
+
+    @user.setter
+    def user(self, value):
+        self._user = PartialUser(value)
+
+
+class Transaction(PartialTransaction):
+
+    @classmethod
+    def from_dict(cls, input_dict, client=None):
+        """
+
+        Parameters
+        ----------
+        input_dict: :class:`dict`
+            Input dict of info fetched from api
+        client: :class:`Client`
+            Client object
+        Returns
+        -------
+        :class:`Transaction`
+            Transaction object
+        """
+        id_ = input_dict['id']
+        user = input_dict['user']
+        party = input_dict['party']
+        amount = input_dict['amount']
+        status = input_dict['status']
+        date_time = input_dict['date_time']
+        return cls(id=id_, user=user, party=party, amount=amount, status=status, date_time=date_time, client=client)
+
+    @property
+    def paid(self):
+        return bool(int(self.status))
 
 
 class Client:
@@ -247,10 +329,10 @@ class Client:
         Client ID
     secret: :class:`str`
         Client secret, it is recommended to store this in an environment variable or other secure method
-    default_scopes: Optional[:class:`Scopes`]
+    default_scopes: :class:`Scopes`, optional
         Default scopes to use for endpoints requiring scopes. May be defined after initialization
-    default_redirects: Optional[:class:`dict`]
-        A dict of the default redirects. Accepted keys are "site" and "auth". The site value
+    default_redirects: :class:`dict`, optional
+        A dict of the default redirects. Accepted keys are "site", "auth", and "pay". The site value
         is used for shorthand and will be substituted in for "{0}" in the other values.
 
     Attributes
@@ -281,7 +363,7 @@ class Client:
         self._session = requests.session()
         self.default_scopes = default_scopes
         self.default_redirects = default_redirects
-        self.api_url = 'https://api.growstocks.xyz/v1/'
+        self.api_url = 'https://api.growstocks.xyz/v1'
         self.auth = auth(self)
         self.pay = pay(self)
 
@@ -353,7 +435,7 @@ class auth:
         _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
         url = 'https://auth.growstocks.xyz/user/authorize'
         params = urllib3.request.urlencode({
-            'secret': self.client.secret, 'scopes': str(scopes), 'redirect_uri': _redirect_uri
+            'client': self.client.client, 'scopes': str(scopes), 'redirect_uri': _redirect_uri
             })
         return '{0}?{1}'.format(url, params)
 
@@ -381,23 +463,161 @@ class auth:
             del payload['scopes']
 
         resp = self.client.maybe_await(self.client.session.post('{0}/user'.format(self.api_url), data=payload))
-        rtrn_json = resp.json()
+        rtrn_json = self.client.maybe_await(resp.json())
 
         return User.from_dict(rtrn_json['user'])
 
 
 class pay:
     """
-    Coming in future minor versions
-
-
     Base class for pay endpoints. Not meant to be initialized outside a client object.
 
-        Parameters
-        -----------
-        client: :class:`Client`
-            Client object
+    Parameters
+    -----------
+    client: :class:`Client`
+        Client object
+
+    Attributes
+    -----------
+    api_url: :class:`str`
+        Api url used for endpoints
     """
 
     def __init__(self, client):
         self.client = client
+        self.api_url = '{0}/pay'.format(self.client.api_url)
+
+    def create_transaction(self, user, amount, notes=None):
+        """
+        Create a transaction.
+
+        Parameters
+        -----------
+        user: :class:`PartialUser`
+            The user to create the transaction for. Usually a :class:`User` but a :class:`PartialUser` will do fine.
+        amount: :class:`int`
+            The amount of world locks to request
+        notes: :class:`str`, optional
+            Transaction notes to send. Maximum of 50 chars.
+
+        Raises
+        -------
+        RuntimeError
+            API call failed
+
+        Returns
+        --------
+        :class:`PartialTransaction`
+            The transaction object
+        """
+        payload = {
+            'secret': self.client.secret,
+            'user': int(user.id),
+            'amount': int(amount),
+            'notes': str(notes)
+            }
+        if notes is None:
+            del payload['notes']
+
+        resp = self.client.maybe_await(self.client.session.post('{0}/transaction/create'.format(self.api_url),
+                                                                data=payload))
+        rtrn_json = self.client.maybe_await(resp.json())
+        if not rtrn_json['success']:
+            raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+
+        rtrn_transaction = PartialTransaction(rtrn_json['transaction'], client=self.client)
+
+        return rtrn_transaction
+
+    def make_payment_url(self, transaction, redirect_uri=None):
+        """
+        Make a payment url for a transaction
+
+        Parameters
+        -----------
+        transaction: :class:`PartialTransaction`
+            The transaction to make a payment url for. Normally :class:`PartialTransaction` but :class:`Transaction`
+            will work fine
+        redirect_uri: :class:`str`, optional
+            URL to redirect the user to
+
+        Raises
+        -------
+        ValueError
+            redirect_uri is None
+
+        Returns
+        --------
+        :class:`str`
+            Payment URL
+        """
+        if redirect_uri is None:
+            redirect_uri = self.client.default_redirects['pay']
+            if redirect_uri is None:
+                raise ValueError('redirect_uri must not be None')
+            else:
+                redirect_uri = redirect_uri.format(self.client.default_redirects['site'])
+        _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
+        url = 'https://pay.growstocks.xyz/pay'
+        params = urllib3.request.urlencode({
+            'client': self.client.client, 'redirect_uri': _redirect_uri, 'transaction': str(transaction.id)
+            })
+        return '{0}?{1}'.format(url, params)
+
+    def fetch_transaction(self, transaction):
+        payload = {
+            'secret': self.client.secret, 'transaction': transaction.id
+            }
+
+        resp = self.client.maybe_await(
+            self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload))
+        rtrn_json = self.client.maybe_await(resp.json())
+        if not rtrn_json['success']:
+            raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+
+        rtrn_transaction = Transaction.from_dict(rtrn_json['transaction'], client=self.client)
+
+        return rtrn_transaction
+
+    def send(self, user, amount, notes=None):
+        """
+
+        Parameters
+        ----------
+        user: :class:`PartialUser`
+            User to send to
+        amount: :class:`int`
+            Amount to send
+        notes: :class:`str`, optional
+            Information about the transaction
+        Returns
+        -------
+        :class:`dict`
+            Response from the API
+        """
+        payload = {
+            'secret': self.client.secret, 'party': user.id, 'amount': amount, 'notes': notes
+            }
+        resp = self.client.maybe_await(self.client.session.post('{0}/send'.format(self.api_url), data=payload))
+        rtrn_json = self.client.maybe_await(resp.json())
+        if not rtrn_json['success']:
+            raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+        return rtrn_json
+
+    def get_balance(self):
+        """
+        Get the current balance of your account
+
+        Returns
+        -------
+        :class:`int`
+            Your balance
+        """
+        payload = {
+            'secret': self.client.secret
+            }
+        resp = self.client.maybe_await(self.client.session.post('{0}/balance'.format(self.api_url), data=payload))
+        rtrn_json = self.client.maybe_await(resp.json())
+        if not rtrn_json['success']:
+            raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+        return rtrn_json['balance']
