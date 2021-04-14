@@ -1,4 +1,5 @@
 import base64
+import inspect
 
 import urllib3
 
@@ -82,6 +83,10 @@ if __name__ != '__main__':
             --------
             :class:`User`
                 The user fetched from the api.
+
+            Notes
+            -----
+            When used in async, this is a coroutine.
             """
             scopes = self.client.default_scopes if scopes is None else scopes
             payload = {
@@ -90,12 +95,23 @@ if __name__ != '__main__':
             if scopes is None:
                 del payload['scopes']
 
-            resp = self.client.maybe_await(self.client.session.post('{0}/user'.format(self.api_url), data=payload))
-            rtrn_json = self.client.maybe_await(resp.json())
-            if not rtrn_json['success']:
-                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+            resp = self.client.session.post('{0}/user'.format(self.api_url), data=payload)
+            if inspect.isawaitable(resp):
+                async def ret_coro(resp_):
+                    resp_ = await resp_
+                    rtrn_json_ = await resp_.json()
+                    if not rtrn_json_['success']:
+                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
-            return User.from_dict(rtrn_json['user'])
+                    return User.from_dict(rtrn_json['user'])
+
+                return ret_coro(resp)
+            else:
+                rtrn_json = resp.json()
+                if not rtrn_json['success']:
+                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+
+                return User.from_dict(rtrn_json['user'])
 
 
     class pay:
@@ -141,6 +157,10 @@ if __name__ != '__main__':
             -------
             :class:`PartialTransaction`
                 The transaction object
+
+            Notes
+            -----
+            When used in async, this is a coroutine.
             """
             payload = {
                 'secret': self.client.secret, 'user': int(user.id), 'amount': int(amount), 'notes': str(notes)
@@ -148,15 +168,27 @@ if __name__ != '__main__':
             if notes is None:
                 del payload['notes']
 
-            resp = self.client.maybe_await(
-                self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload))
-            rtrn_json = self.client.maybe_await(resp.json())
-            if not rtrn_json['success']:
-                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+            resp = self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload)
+            if inspect.isawaitable(resp):
+                async def ret_coro(resp_):
+                    resp_ = await resp_
+                    rtrn_json_ = await resp_.json()
+                    if not rtrn_json_['success']:
+                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
-            rtrn_transaction = PartialTransaction(rtrn_json['transaction'], client=self.client)
+                    rtrn_transaction_ = PartialTransaction(rtrn_json_['transaction'], client=self.client)
 
-            return rtrn_transaction
+                    return rtrn_transaction_
+
+                return ret_coro(resp)
+            else:
+                rtrn_json = resp.json()
+                if not rtrn_json['success']:
+                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+
+                rtrn_transaction = PartialTransaction(rtrn_json['transaction'], client=self.client)
+
+                return rtrn_transaction
 
         def make_payment_url(self, transaction, redirect_uri=None):
             """
@@ -211,20 +243,36 @@ if __name__ != '__main__':
             -------
             :class:`Transaction`
                 Transaction object with info about the fetched transaction.
+
+            Notes
+            -----
+            When used in async, this is a coroutine.
             """
             payload = {
                 'secret': self.client.secret, 'transaction': transaction.id
                 }
 
-            resp = self.client.maybe_await(
-                self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload))
-            rtrn_json = self.client.maybe_await(resp.json())
-            if not rtrn_json['success']:
-                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+            resp = self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload)
+            if inspect.isawaitable(resp):
+                async def ret_coro(resp_):
+                    resp_ = await resp_
+                    rtrn_json_ = await resp_.json()
+                    if not rtrn_json_['success']:
+                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
-            rtrn_transaction = Transaction.from_dict(rtrn_json['transaction'], client=self.client)
+                    rtrn_transaction_ = Transaction.from_dict(rtrn_json_['transaction'], client=self.client)
 
-            return rtrn_transaction
+                    return rtrn_transaction_
+
+                return ret_coro(resp)
+            else:
+                rtrn_json = resp.json()
+                if not rtrn_json['success']:
+                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+
+                rtrn_transaction = Transaction.from_dict(rtrn_json['transaction'], client=self.client)
+
+                return rtrn_transaction
 
         def send(self, user, amount, notes=None):
             """
@@ -248,15 +296,29 @@ if __name__ != '__main__':
             -------
             :class:`dict`
                 Response from the API
+
+            Notes
+            -----
+            When used in async, this is a coroutine.
             """
             payload = {
                 'secret': self.client.secret, 'party': user.id, 'amount': amount, 'notes': notes
                 }
-            resp = self.client.maybe_await(self.client.session.post('{0}/send'.format(self.api_url), data=payload))
-            rtrn_json = self.client.maybe_await(resp.json())
-            if not rtrn_json['success']:
-                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
-            return rtrn_json
+            resp = self.client.session.post('{0}/send'.format(self.api_url), data=payload)
+            if inspect.isawaitable(resp):
+                async def ret_coro(resp_):
+                    resp_ = await resp_
+                    rtrn_json_ = await resp_.json()
+                    if not rtrn_json_['success']:
+                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                    return rtrn_json_
+
+                return ret_coro(resp)
+            else:
+                rtrn_json = resp.json()
+                if not rtrn_json['success']:
+                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                return rtrn_json
 
         def get_balance(self):
             """
@@ -271,12 +333,26 @@ if __name__ != '__main__':
             -------
             :class:`int`
                 Your balance
+
+            Notes
+            -----
+            When used in async, this is a coroutine.
             """
             payload = {
                 'secret': self.client.secret
                 }
-            resp = self.client.maybe_await(self.client.session.post('{0}/balance'.format(self.api_url), data=payload))
-            rtrn_json = self.client.maybe_await(resp.json())
-            if not rtrn_json['success']:
-                raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
-            return int(rtrn_json['balance'])
+            resp = self.client.session.post('{0}/balance'.format(self.api_url), data=payload)
+            if inspect.isawaitable(resp):
+                async def ret_coro(resp_):
+                    resp_ = await resp_
+                    rtrn_json_ = await resp_.json()
+                    if not rtrn_json_['success']:
+                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                    return int(rtrn_json_['balance'])
+
+                return ret_coro(resp)
+            else:
+                rtrn_json = resp.json()
+                if not rtrn_json['success']:
+                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                return int(rtrn_json['balance'])

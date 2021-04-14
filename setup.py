@@ -38,10 +38,11 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent"
         ],
-    python_requires='>=2.7',
+    python_requires='>=3.5',
     install_requires=[
             'requests',
-            'urllib3'
+            'urllib3',
+            'aiohttp'
         ],
     license='MIT',
     project_urls={

@@ -5,8 +5,6 @@ growstocks
 
 A wrapper for the GrowStocks API, made for both synchronous and asynchronous applications.
 
-NOTE: asynchronous support has not been implemented yet, but is planned for the near future.
-
 PyPI: https://pypi.org/project/growstocks/
 
 Docs: https://growstocks.readthedocs.io/en/latest/
@@ -36,7 +34,15 @@ Usage
      'growid': 'Bob430',
      'balance': 3}
 
+Using Async
+###########
+To use in an async context, just use the imports below and make sure to await the functions marked as coroutines.
+
+.. code-block:: python
+    import growstocks.aio as growstocks
 """
+import asyncio
+
 import requests
 
 from .ext import *
@@ -109,8 +115,10 @@ class Client:
     @staticmethod
     def maybe_await(maybe_coro):
         """
-        Await if it is a coro, return if not.
+        Await if it is a coro, return if not. Overwritten in async import
 
         :meta private:
         """
-        return maybe_coro  # will add support later for async, going to build a python 2 compatible version first
+        if inspect.isawaitable(maybe_coro):
+            maybe_coro = asyncio.run(maybe_coro)
+        return maybe_coro
