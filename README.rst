@@ -20,7 +20,7 @@ NOTE: asynchronous support has not been implemented yet, but is planned for the 
 
 |Downloads badge|
 
-.. |Downloads badge| image:: https://static.pepy.tech/personalized-badge/growstocks?period=month&units=international_system&left_color=black&right_color=green&left_text=Downloads
+.. |Downloads badge| image:: https://static.pepy.tech/personalized-badge/growstocks?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads
    :target: https://pepy.tech/project/growstocks
    :alt: Download Counter
 
