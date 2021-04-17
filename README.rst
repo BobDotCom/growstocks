@@ -4,8 +4,6 @@ growstocks
 
 A wrapper for the GrowStocks API, made for both synchronous and asynchronous applications.
 
-NOTE: asynchronous support has not been implemented yet, but is planned for the near future.
-
 |Status badge| |Docs badge| |Downloads badge|
 
 .. |Status badge| image:: https://github.com/BobDotCom/growstocks/workflows/Python%20Package/badge.svg
