@@ -6,19 +6,15 @@ A wrapper for the GrowStocks API, made for both synchronous and asynchronous app
 
 NOTE: asynchronous support has not been implemented yet, but is planned for the near future.
 
-|Status badge|
+|Status badge| |Docs badge| |Downloads badge|
 
 .. |Status badge| image:: https://github.com/BobDotCom/growstocks/workflows/Python%20Package/badge.svg
    :target: https://github.com/BobDotCom/growstocks/actions?query=workflow%3A"Python+Package"
    :alt: Package Status
 
-|Docs badge|
-
 .. |Docs badge| image:: https://readthedocs.org/projects/growstocks/badge/?version=latest
    :target: https://growstocks.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-
-|Downloads badge|
 
 .. |Downloads badge| image:: https://static.pepy.tech/personalized-badge/growstocks?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads
    :target: https://pepy.tech/project/growstocks
