@@ -18,6 +18,12 @@ NOTE: asynchronous support has not been implemented yet, but is planned for the 
    :target: https://growstocks.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+|Downloads badge|
+
+.. |Downloads badge| image:: https://static.pepy.tech/personalized-badge/growstocks?period=month&units=international_system&left_color=black&right_color=green&left_text=Downloads
+   :target: https://pepy.tech/project/growstocks
+   :alt: Download Counter
+
 PyPI: https://pypi.org/project/growstocks/
 
 Docs: https://growstocks.readthedocs.io/en/latest/
