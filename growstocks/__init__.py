@@ -47,6 +47,7 @@ import asyncio
 
 import requests
 
+from . import errors
 from .ext import *
 from .wrapper import *
 

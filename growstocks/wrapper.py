@@ -4,6 +4,7 @@ import inspect
 import urllib3
 
 from .ext import PartialTransaction, Transaction, User
+from .errors import RequestFailure, RedirectUriNone
 
 if __name__ != '__main__':
     class auth:
@@ -41,7 +42,7 @@ if __name__ != '__main__':
 
             Raises
             -------
-            ValueError
+            RedirectUriNone
                 redirect_uri is :class:`None`
 
             Returns
@@ -52,7 +53,7 @@ if __name__ != '__main__':
             if redirect_uri is None:
                 redirect_uri = self.client.default_redirects['auth']
                 if redirect_uri is None:
-                    raise ValueError('redirect_uri must not be None')
+                    raise RedirectUriNone('redirect_uri must not be None')
                 else:
                     redirect_uri = redirect_uri.format(self.client.default_redirects['site'])
             scopes = self.client.default_scopes if scopes is None else scopes
@@ -76,7 +77,7 @@ if __name__ != '__main__':
 
             Raises
             ------
-            RuntimeError
+            RequestFailure
                 API call failed.
 
             Returns
@@ -101,7 +102,7 @@ if __name__ != '__main__':
                     resp_ = await resp_
                     rtrn_json_ = await resp_.json()
                     if not rtrn_json_['success']:
-                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
                     return User.from_dict(rtrn_json['user'])
 
@@ -109,7 +110,7 @@ if __name__ != '__main__':
             else:
                 rtrn_json = resp.json()
                 if not rtrn_json['success']:
-                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
                 return User.from_dict(rtrn_json['user'])
 
@@ -150,7 +151,7 @@ if __name__ != '__main__':
 
             Raises
             ------
-            RuntimeError
+            RequestFailure
                 API call failed
 
             Returns
@@ -174,7 +175,7 @@ if __name__ != '__main__':
                     resp_ = await resp_
                     rtrn_json_ = await resp_.json()
                     if not rtrn_json_['success']:
-                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
                     rtrn_transaction_ = PartialTransaction(rtrn_json_['transaction'], client=self.client)
 
@@ -184,7 +185,7 @@ if __name__ != '__main__':
             else:
                 rtrn_json = resp.json()
                 if not rtrn_json['success']:
-                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
                 rtrn_transaction = PartialTransaction(rtrn_json['transaction'], client=self.client)
 
@@ -204,7 +205,7 @@ if __name__ != '__main__':
 
             Raises
             -------
-            ValueError
+            RedirectUriNone
                 redirect_uri is None
 
             Returns
@@ -215,7 +216,7 @@ if __name__ != '__main__':
             if redirect_uri is None:
                 redirect_uri = self.client.default_redirects['pay']
                 if redirect_uri is None:
-                    raise ValueError('redirect_uri must not be None')
+                    raise RedirectUriNone('redirect_uri must not be None')
                 else:
                     redirect_uri = redirect_uri.format(self.client.default_redirects['site'])
             _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
@@ -236,7 +237,7 @@ if __name__ != '__main__':
 
             Raises
             ------
-            RuntimeError
+            RequestFailure
                 API call failed.
 
             Returns
@@ -258,7 +259,7 @@ if __name__ != '__main__':
                     resp_ = await resp_
                     rtrn_json_ = await resp_.json()
                     if not rtrn_json_['success']:
-                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
                     rtrn_transaction_ = Transaction.from_dict(rtrn_json_['transaction'], client=self.client)
 
@@ -268,7 +269,7 @@ if __name__ != '__main__':
             else:
                 rtrn_json = resp.json()
                 if not rtrn_json['success']:
-                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
                 rtrn_transaction = Transaction.from_dict(rtrn_json['transaction'], client=self.client)
 
@@ -289,7 +290,7 @@ if __name__ != '__main__':
 
             Raises
             ------
-            RuntimeError
+            RequestFailure
                 Request to api failed
 
             Returns
@@ -310,14 +311,14 @@ if __name__ != '__main__':
                     resp_ = await resp_
                     rtrn_json_ = await resp_.json()
                     if not rtrn_json_['success']:
-                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
                     return rtrn_json_
 
                 return ret_coro(resp)
             else:
                 rtrn_json = resp.json()
                 if not rtrn_json['success']:
-                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
                 return rtrn_json
 
         def get_balance(self):
@@ -326,7 +327,7 @@ if __name__ != '__main__':
 
             Raises
             ------
-            RuntimeError
+            RequestFailure
                 Request to api failed
 
             Returns
@@ -347,12 +348,12 @@ if __name__ != '__main__':
                     resp_ = await resp_
                     rtrn_json_ = await resp_.json()
                     if not rtrn_json_['success']:
-                        raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json_))
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
                     return int(rtrn_json_['balance'])
 
                 return ret_coro(resp)
             else:
                 rtrn_json = resp.json()
                 if not rtrn_json['success']:
-                    raise RuntimeError('Request to api was unsuccessful: {0}'.format(rtrn_json))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
                 return int(rtrn_json['balance'])
