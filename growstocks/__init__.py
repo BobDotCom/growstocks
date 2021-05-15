@@ -111,6 +111,9 @@ class Client:
     @property
     def session(self):
         """
+        Session object used when querying api. May be an instance of :class:`requests.Session` or
+        :class:`aiohttp.ClientSession`.
+
         :meta private:
         """
         return self._session
