@@ -114,14 +114,3 @@ class Client:
         :meta private:
         """
         return self._session
-
-    @staticmethod
-    def maybe_await(maybe_coro):
-        """
-        Await if it is a coro, return if not. Overwritten in async import
-
-        :meta private:
-        """
-        if inspect.isawaitable(maybe_coro):
-            maybe_coro = asyncio.run(maybe_coro)
-        return maybe_coro
