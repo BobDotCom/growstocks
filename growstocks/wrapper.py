@@ -100,7 +100,10 @@ if __name__ != '__main__':
             if inspect.isawaitable(resp):
                 async def ret_coro(resp_):
                     resp_ = await resp_
-                    rtrn_json_ = await resp_.json()
+                    try:
+                        rtrn_json_ = await resp_.json()
+                    except:
+                        raise RequestFailure('Request to api was unsuccessful: {0}'.format(await resp_.text()))
                     if not rtrn_json_['success']:
                         raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
@@ -108,7 +111,10 @@ if __name__ != '__main__':
 
                 return ret_coro(resp)
             else:
-                rtrn_json = resp.json()
+                try:
+                    rtrn_json = resp.json()
+                except:
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(resp.text()))
                 if not rtrn_json['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
