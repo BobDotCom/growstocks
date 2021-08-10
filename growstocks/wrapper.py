@@ -114,7 +114,7 @@ if __name__ != '__main__':
                 try:
                     rtrn_json = resp.json()
                 except:
-                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(resp.text()))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(resp.text)
                 if not rtrn_json['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
