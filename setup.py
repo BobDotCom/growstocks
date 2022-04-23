@@ -34,7 +34,7 @@ setuptools.setup(
     download_url='https://github.com/BobDotCom/growstocks/releases',
     packages=setuptools.find_packages(exclude=['tests*', 'build.py']),
     classifiers=[
-        "Development Status :: 5 - Stable",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Natural Language :: English",
