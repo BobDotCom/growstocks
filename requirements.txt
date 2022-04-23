@@ -1,3 +1,4 @@
 requests
 urllib3
 aiohttp
+typing_extensions>=4.0, <5.0
