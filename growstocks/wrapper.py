@@ -141,7 +141,7 @@ class Auth:
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
-                return User.from_dict(rtrn_json['user'])
+                return User.from_dict(rtrn_json_['user'])
 
             return ret_coro(resp)
         else:
