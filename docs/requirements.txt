@@ -1,1 +1,1 @@
-sphinx-theme-material
+sphinx_rtd_theme~=1.0.0

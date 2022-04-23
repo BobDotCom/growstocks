@@ -21,18 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from . import errors  # Pending deprecation
-from .client import *
-from .errors import *
-from .scopes import *
-from .transaction import *
-from .user import *
-from .wrapper import *
+from typing import TypedDict
 
-# PACKAGE INFO
-__title__ = "growstocks"
-__author__ = 'BobDotCom'
-__version__ = '1.0.3'
+__all__ = "Transaction",
 
-__license__ = "MIT License"
-__copyright__ = "Copyright 2021 {}".format(__author__)
+
+class Transaction(TypedDict):
+    id: int
+    user: int
+    party: int
+    amount: int
+    status: str
+    date_time: str

@@ -21,18 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from . import errors  # Pending deprecation
-from .client import *
-from .errors import *
-from .scopes import *
-from .transaction import *
-from .user import *
-from .wrapper import *
 
-# PACKAGE INFO
-__title__ = "growstocks"
-__author__ = 'BobDotCom'
-__version__ = '1.0.3'
+import aiohttp
 
-__license__ = "MIT License"
-__copyright__ = "Copyright 2021 {}".format(__author__)
+from ..client import Client as SyncClient
+
+__all__ = "Client",
+
+
+class Client(SyncClient):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._session = aiohttp.ClientSession()
