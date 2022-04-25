@@ -23,9 +23,11 @@ SOFTWARE.
 """
 import base64
 import inspect
-from typing import Union, Awaitable, TYPE_CHECKING, TypeVar
+from typing import Union, Awaitable, TYPE_CHECKING, TypeVar, Optional, Any, Dict
 
-import urllib3
+import aiohttp.web_response
+import requests
+import urllib3.request
 
 from .errors import RequestFailure, RedirectUriNone
 from .transaction import Transaction
@@ -39,6 +41,9 @@ else:
     Scopes = TypeVar("Scopes")
 
 __all__ = "Auth", "Pay"
+
+AiohttpResponse = TypeVar("AiohttpResponse", bound=aiohttp.client._RequestContextManager)
+Response = Union[requests.Response, AiohttpResponse]
 
 
 class Auth:
@@ -63,7 +68,7 @@ class Auth:
         self.client = client
         self.api_url = '{0}/auth'.format(self.client.api_url)
 
-    def make_url(self, redirect_uri: str = None, scopes: Scopes = None) -> str:
+    def make_url(self, redirect_uri: Optional[str] = None, scopes: Optional[Scopes] = None) -> str:
         """
         Generate an authorization url with set parameters
 
@@ -93,12 +98,13 @@ class Auth:
         scopes = self.client.default_scopes if scopes is None else scopes
         _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
         url = 'https://auth.growstocks.xyz/user/authorize'
-        params = urllib3.request.urlencode({
+        # TODO: Do something better here
+        params = urllib3.request.urlencode({  # type: ignore[attr-defined]
             'client': self.client.client, 'scopes': str(scopes), 'redirect_uri': _redirect_uri
         })
         return '{0}?{1}'.format(url, params)
 
-    def fetch_user(self, token: str, scopes: Scopes = None) -> Union[User, Awaitable[User]]:
+    def fetch_user(self, token: str, scopes: Optional[Scopes] = None) -> Union[User, Awaitable[User]]:
         """
         Fetch a user from the api by their token.
 
@@ -132,23 +138,25 @@ class Auth:
 
         resp = self.client.session.post('{0}/user'.format(self.api_url), data=payload)
         if inspect.isawaitable(resp):
-            async def ret_coro(resp_):
-                resp_ = await resp_
+            async def ret_coro(resp_: AiohttpResponse) -> User:
+                resp_val = await resp_
                 try:
-                    rtrn_json_ = await resp_.json()
+                    rtrn_json_ = await resp_val.json()
                 except:
-                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(await resp_.text()))
+                    raise RequestFailure('Request to api was unsuccessful: {0}'.format(await resp_val.text()))
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
                 return User.from_dict(rtrn_json_['user'])
 
-            return ret_coro(resp)
+            return ret_coro(resp)  # type: ignore[type-var]
         else:
             try:
-                rtrn_json = resp.json()
+                rtrn_json = resp.json()  # type: ignore[union-attr]
             except:
-                raise RequestFailure('Request to api was unsuccessful: {0}'.format(resp.text))
+                raise RequestFailure(
+                    'Request to api was unsuccessful: {0}'.format(resp.text)  # type: ignore[union-attr]
+                )
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
@@ -180,7 +188,7 @@ class Pay:
             self,
             user: User,
             amount: int,
-            notes: str = None
+            notes: Optional[str] = None
     ) -> Union[Transaction, Awaitable[Transaction]]:
         """
         Create a transaction.
@@ -216,9 +224,9 @@ class Pay:
 
         resp = self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload)
         if inspect.isawaitable(resp):
-            async def ret_coro(resp_):
-                resp_ = await resp_
-                rtrn_json_ = await resp_.json()
+            async def ret_coro(resp_: AiohttpResponse) -> Transaction:
+                resp_val = await resp_
+                rtrn_json_ = await resp_val.json()
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
@@ -226,9 +234,9 @@ class Pay:
 
                 return rtrn_transaction_
 
-            return ret_coro(resp)
+            return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()
+            rtrn_json = resp.json()  # type: ignore[union-attr]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
@@ -236,7 +244,11 @@ class Pay:
 
             return rtrn_transaction
 
-    def make_payment_url(self, transaction: Transaction, redirect_uri: str = None) -> Union[str, Awaitable[str]]:
+    def make_payment_url(
+            self,
+            transaction: Transaction,
+            redirect_uri: Optional[str] = None
+    ) -> str:
         """
         Make a payment url for a transaction
 
@@ -265,7 +277,7 @@ class Pay:
                 redirect_uri = redirect_uri.format(self.client.default_redirects['site'])
         _redirect_uri = base64.b64encode(redirect_uri.encode('ascii')).decode('ascii')
         url = 'https://pay.growstocks.xyz/pay'
-        params = urllib3.request.urlencode({
+        params = urllib3.request.urlencode({  # type: ignore[attr-defined]
             'client': self.client.client, 'redirect_uri': _redirect_uri, 'transaction': str(transaction.id)
         })
         return '{0}?{1}'.format(url, params)
@@ -299,9 +311,9 @@ class Pay:
 
         resp = self.client.session.post('{0}/transaction/create'.format(self.api_url), data=payload)
         if inspect.isawaitable(resp):
-            async def ret_coro(resp_):
-                resp_ = await resp_
-                rtrn_json_ = await resp_.json()
+            async def ret_coro(resp_: AiohttpResponse) -> Transaction:
+                resp_val = await resp_
+                rtrn_json_ = await resp_val.json()
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
 
@@ -309,9 +321,9 @@ class Pay:
 
                 return rtrn_transaction_
 
-            return ret_coro(resp)
+            return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()
+            rtrn_json = resp.json()  # type: ignore[union-attr]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
@@ -319,7 +331,12 @@ class Pay:
 
             return rtrn_transaction
 
-    def send(self, user: User, amount: int, notes: str = None) -> Union[Transaction, Awaitable[Transaction]]:
+    def send(
+            self,
+            user: User,
+            amount: int,
+            notes: Optional[str] = None
+    ) -> Union[Dict[str, Any], Awaitable[Dict[str, Any]]]:
         """
         Send world locks to a user.
 
@@ -351,19 +368,19 @@ class Pay:
         }
         resp = self.client.session.post('{0}/send'.format(self.api_url), data=payload)
         if inspect.isawaitable(resp):
-            async def ret_coro(resp_):
-                resp_ = await resp_
-                rtrn_json_ = await resp_.json()
+            async def ret_coro(resp_: AiohttpResponse) -> dict[str, Any]:
+                resp_val = await resp_
+                rtrn_json_ = await resp_val.json()
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
-                return rtrn_json_
+                return rtrn_json_  # type: ignore[no-any-return]
 
-            return ret_coro(resp)
+            return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()
+            rtrn_json = resp.json()  # type: ignore[union-attr]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
-            return rtrn_json
+            return rtrn_json  # type: ignore[no-any-return]
 
     def get_balance(self) -> Union[int, Awaitable[int]]:
         """
@@ -388,16 +405,16 @@ class Pay:
         }
         resp = self.client.session.post('{0}/balance'.format(self.api_url), data=payload)
         if inspect.isawaitable(resp):
-            async def ret_coro(resp_):
-                resp_ = await resp_
-                rtrn_json_ = await resp_.json()
+            async def ret_coro(resp_: AiohttpResponse) -> int:
+                resp_val = await resp_
+                rtrn_json_ = await resp_val.json()
                 if not rtrn_json_['success']:
                     raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json_))
                 return int(rtrn_json_['balance'])
 
-            return ret_coro(resp)
+            return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()
+            rtrn_json = resp.json()  # type: ignore[union-attr]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
             return int(rtrn_json['balance'])

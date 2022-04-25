@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from typing import Optional
 
 try:
     from typing import TypedDict
@@ -30,10 +31,10 @@ except ImportError:
 __all__ = "User",
 
 
-class User(TypedDict):  # TODO: Some should be optional
+class User(TypedDict):  # TODO: Maybe not all optional
     id: int
-    name: str
-    email: str
-    growid: str
-    balance: bool
-    discordID: str
+    name: Optional[str]
+    email: Optional[str]
+    growid: Optional[str]
+    balance: Optional[int]
+    discordID: Optional[str]

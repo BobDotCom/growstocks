@@ -49,7 +49,7 @@ setuptools.setup(
         "Topic :: Utilities",
         "Typing :: Typed",
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     install_requires=[
             'requests',
             'urllib3',

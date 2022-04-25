@@ -21,10 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from typing import Optional, Union
 
 import requests
+import aiohttp
 
 from .scopes import Scopes
+from .types.client import DefaultRedirects
 from .wrapper import Auth, Pay
 
 __all__ = "Client",
@@ -64,22 +67,28 @@ class Client:
         The url to use when querying the api
     """
 
-    def __init__(self, client: int, secret: str, default_scopes: Scopes = Scopes(), default_redirects: dict = None):
+    def __init__(
+            self,
+            client: int,
+            secret: str,
+            *,
+            default_scopes: Scopes = Scopes(),
+            default_redirects: Optional[DefaultRedirects] = None
+    ):
         if default_redirects is None:
-            default_redirects = {
-                'site': '', 'auth': None
-            }
+            default_redirects = DefaultRedirects(site='', auth=None, pay=None)
         self.client = client
         self.secret = secret
-        self._session = requests.session()
+        self._session: Union[requests.Session, aiohttp.ClientSession] = requests.session()
         self.default_scopes = default_scopes
         self.default_redirects = default_redirects
         self.api_url = 'https://api.growstocks.xyz/v1'
         self.auth = Auth(self)
         self.pay = Pay(self)
+        self.is_async = False
 
     @property
-    def session(self):
+    def session(self) -> Union[requests.Session, aiohttp.ClientSession]:
         """
         Session object used when querying api. May be an instance of :class:`requests.Session` or
         :class:`aiohttp.ClientSession`.

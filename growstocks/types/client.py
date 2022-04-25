@@ -23,24 +23,18 @@ SOFTWARE.
 """
 from typing import Optional
 
-import aiohttp
+try:
+    from typing import TypedDict
+except ImportError:
+    from typing_extensions import TypedDict
 
-from .. import Scopes
-from ..client import Client as SyncClient
-
-__all__ = "Client",
-
-from ..types.client import DefaultRedirects
+__all__ = "DefaultRedirects",
 
 
-class Client(SyncClient):
-    def __init__(
-            self,
-            client: int,
-            secret: str,
-            *,
-            default_scopes: Scopes = Scopes(),
-            default_redirects: Optional[DefaultRedirects] = None,
-    ):
-        super().__init__(client, secret, default_scopes=default_scopes, default_redirects=default_redirects)
-        self._session = aiohttp.ClientSession()
+class DefaultRedirects(TypedDict):
+    """
+    Default redirects for the client.
+    """
+    site: Optional[str]
+    auth: Optional[str]
+    pay: Optional[str]

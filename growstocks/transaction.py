@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import datetime
-from typing import Optional, TYPE_CHECKING, TypeVar
+from typing import Optional, TYPE_CHECKING, TypeVar, Awaitable, Union
 
 from .types.transaction import Transaction as TransactionData
 from .user import User
@@ -74,16 +74,27 @@ class Transaction:
         The client object
     """
 
-    def __init__(self, id, user=None, party=None, amount=None, status=None, date_time=None, client=None):
+    def __init__(
+            self,
+            id: int,
+            client: Client,
+            user: Optional[User] = None,
+            party: Optional[int] = None,
+            amount: Optional[int] = None,
+            status: Optional[int] = None,
+            date_time: Optional[str] = None,
+    ):
         self.id = id
         self.user = user
         self.party = party
         self.amount = amount
         self.status = status
-        self.datetime = date_time
+        self.datetime: Optional[datetime.datetime] = None
+        if date_time is not None:
+            self.set_datetime(date_time)
         self._client = client
 
-    def make_payment_url(self, redirect_uri: str = None) -> str:
+    def make_payment_url(self, redirect_uri: Optional[str] = None) -> str:
         """
         Shortcut of :meth:`Client.pay.make_payment_url`
 
@@ -99,7 +110,7 @@ class Transaction:
         """
         return self._client.pay.make_payment_url(self, redirect_uri=redirect_uri)
 
-    def fetch_info(self) -> 'Transaction':
+    def fetch_info(self) -> Union['Transaction', Awaitable['Transaction']]:
         """
         Shortcut of :meth:`Client.pay.fetch_transaction`
 
@@ -110,16 +121,8 @@ class Transaction:
         """
         return self._client.pay.fetch_transaction(self)
 
-    @property
-    def datetime(self) -> Optional[datetime.datetime]:
-        """
-        :meta private:
-        """
-        return self._datetime
-
-    @datetime.setter
-    def datetime(self, value: str) -> None:
-        self._datetime = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+    def set_datetime(self, value: str) -> None:
+        self.datetime = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
 
     @property
     def user(self) -> Optional[User]:
@@ -133,7 +136,7 @@ class Transaction:
         self._user = User(id=value)
 
     @classmethod
-    def from_dict(cls, input_dict: TransactionData, client: Client = None) -> 'Transaction':
+    def from_dict(cls, input_dict: TransactionData, client: Client) -> 'Transaction':
         """
         Extract a transaction object from a dict returned by api
 
@@ -155,10 +158,18 @@ class Transaction:
         amount = input_dict['amount']
         status = input_dict['status']
         date_time = input_dict['date_time']
-        return cls(id=id_, user=user, party=party, amount=amount, status=status, date_time=date_time, client=client)
+        return cls(
+            id=id_,
+            user=User(id=user),
+            party=party,
+            amount=amount,
+            status=int(status),
+            date_time=date_time,
+            client=client
+        )
 
     @property
-    def paid(self) -> bool:
+    def paid(self) -> Optional[bool]:
         """
         If the order is paid
 
@@ -167,4 +178,4 @@ class Transaction:
         :class:`bool`
             Whether the order is paid or not
         """
-        return bool(int(self.status))
+        return bool(int(self.status)) if self.status is not None else None
