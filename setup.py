@@ -60,5 +60,8 @@ setuptools.setup(
         'Documentation': 'https://growstocks.readthedocs.io/en/latest/index.html',
         'Source':        'https://github.com/BobDotCom/growstocks',
         'Tracker':       'https://github.com/BobDotCom/growstocks/issues'
-        }
+        },
+    package_data={
+        'growstocks': ['py.typed']
+    }
     )
