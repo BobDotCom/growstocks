@@ -1,4 +1,4 @@
 -r requirements.txt
-mypy~=0.950
+mypy~=0.960
 pylint~=2.13.9
 pytest~=7.1.2
