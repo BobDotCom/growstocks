@@ -152,10 +152,10 @@ class Auth:
             return ret_coro(resp)  # type: ignore[type-var]
         else:
             try:
-                rtrn_json = resp.json()  # type: ignore[union-attr]
+                rtrn_json = resp.json()  # type: ignore[union-attr,misc]
             except:
                 raise RequestFailure(
-                    'Request to api was unsuccessful: {0}'.format(resp.text)  # type: ignore[union-attr]
+                    'Request to api was unsuccessful: {0}'.format(resp.text)  # type: ignore[union-attr,misc]
                 )
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
@@ -236,7 +236,7 @@ class Pay:
 
             return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()  # type: ignore[union-attr]
+            rtrn_json = resp.json()  # type: ignore[union-attr,misc]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
@@ -323,7 +323,7 @@ class Pay:
 
             return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()  # type: ignore[union-attr]
+            rtrn_json = resp.json()  # type: ignore[union-attr,misc]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
 
@@ -377,7 +377,7 @@ class Pay:
 
             return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()  # type: ignore[union-attr]
+            rtrn_json = resp.json()  # type: ignore[union-attr,misc]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
             return rtrn_json  # type: ignore[no-any-return]
@@ -414,7 +414,7 @@ class Pay:
 
             return ret_coro(resp)  # type: ignore[type-var]
         else:
-            rtrn_json = resp.json()  # type: ignore[union-attr]
+            rtrn_json = resp.json()  # type: ignore[union-attr,misc]
             if not rtrn_json['success']:
                 raise RequestFailure('Request to api was unsuccessful: {0}'.format(rtrn_json))
             return int(rtrn_json['balance'])
