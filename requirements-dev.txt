@@ -1,4 +1,4 @@
 -r requirements.txt
-mypy==1.0.1
+mypy==1.2.0
 pylint==2.15.8
 pytest==7.2.1
