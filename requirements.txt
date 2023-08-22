@@ -1,4 +1,4 @@
 requests
-urllib3
+urllib3<2
 aiohttp
 typing-extensions>=4.0, <5.0; python_version < "3.8"
