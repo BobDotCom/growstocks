@@ -1,7 +1,11 @@
+==================
+⚠️ Archival Notice
+==================
+Growstocks shut down their website in 2023, and as such this repository has been archived indefinitely.
+
 ===================
 growstocks
 ===================
-
 A wrapper for the GrowStocks API, made for both synchronous and asynchronous applications.
 
 |Status badge| |Docs badge| |Downloads badge|
